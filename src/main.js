@@ -13,13 +13,13 @@ const saturationInput = document.querySelector('#saturation');
 const lightVector = document.querySelector('#light-vector');
 let saturationValue = 1.0;
 let saturationTarget = null;
-const islandUrl = '/models/floatingIsland.glb';
+const islandUrl = `${import.meta.env.BASE_URL}models/floatingIsland.glb`;
 
 const buildingLinks = [
-  { name: 'node_0', href: '/edifici/edificio-1.html', label: 'edificio-1' },
-  { name: 'node_0001', href: '/edifici/edificio-2.html', label: 'edificio-2' },
-  { name: 'node_0002', href: '/edifici/edificio-3.html', label: 'edificio-3' },
-  { name: 'node_0004', href: '/edifici/edificio-4.html', label: 'edificio-4' }
+  { name: 'node_0', href: `${import.meta.env.BASE_URL}edifici/edificio-1.html`, label: 'edificio-1' },
+  { name: 'node_0001', href: `${import.meta.env.BASE_URL}edifici/edificio-2.html`, label: 'edificio-2' },
+  { name: 'node_0002', href: `${import.meta.env.BASE_URL}edifici/edificio-3.html`, label: 'edificio-3' },
+  { name: 'node_0004', href: `${import.meta.env.BASE_URL}edifici/edificio-4.html`, label: 'edificio-4' }
 ];
 const buildingLinkByName = new Map(buildingLinks.map((building) => [building.name, building]));
 const meshToBuildingMap = new Map();
@@ -109,7 +109,7 @@ if (saturationInput) {
 }
 
 const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('/draco/');
+dracoLoader.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
 dracoLoader.setWorkerLimit(2);
 dracoLoader.preload();
 
