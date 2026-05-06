@@ -23,6 +23,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          BASE_URL: /Floating-Island/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
