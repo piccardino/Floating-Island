@@ -4,6 +4,137 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Floating Island</title>
+    <script>
+/**
+ * Building hover outline effect
+ * Uses the globals exposed by the bundle: __islandScene, __islandCamera, __islandRenderer, __islandRaycaster, __islandClickableMeshes
+ */
+(function() {
+  'use strict';
+
+  let scene, camera, renderer, raycaster, clickableMeshes;
+  let mouse = { x: 0, y: 0 };
+  let hoveredBuilding = null;
+  let outlineGroup = null;
+  let ready = false;
+
+  function init() {
+    // Wait for the bundle to expose the globals
+    if (!window.__islandScene || !window.__islandCamera || !window.__islandRenderer) {
+      setTimeout(init, 100);
+      return;
+    }
+
+    scene = window.__islandScene;
+    camera = window.__islandCamera;
+    renderer = window.__islandRenderer;
+    raycaster = window.__islandRaycaster;
+    clickableMeshes = window.__islandClickableMeshes || [];
+
+    if (clickableMeshes.length === 0) {
+      setTimeout(init, 200);
+      return;
+    }
+
+    // Create outline group using the same Group class from the bundle
+    const Group = Object.getPrototypeOf(scene).constructor;
+    outlineGroup = new Group();
+    outlineGroup.name = '__outlineGroup';
+    scene.add(outlineGroup);
+
+    // Attach event listeners
+    const canvas = renderer.domElement;
+    canvas.addEventListener('pointermove', onPointerMove);
+
+    ready = true;
+    console.log(`[HoverOutline] Ready — tracking ${clickableMeshes.length} buildings`);
+  }
+
+  function onPointerMove(e) {
+    if (!ready || !raycaster) return;
+
+    const canvas = renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+    mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(clickableMeshes, false);
+
+    if (hits.length > 0) {
+      const mesh = hits[0].object;
+      const building = mesh.userData.focusObject || mesh;
+      
+      if (hoveredBuilding !== building) {
+        clearOutline();
+        hoveredBuilding = building;
+        createOutline(building);
+      }
+    } else {
+      if (hoveredBuilding) {
+        clearOutline();
+        hoveredBuilding = null;
+      }
+    }
+  }
+
+  function createOutline(building) {
+    if (!outlineGroup) return;
+
+    // Get the Color class from the bundle
+    const Color = Object.getPrototypeOf(scene.fog.color).constructor;
+    const outlineColor = new Color(0xffaa00);
+
+    building.traverse(obj => {
+      if (!obj.isMesh) return;
+
+      const clone = obj.clone();
+      clone.material = obj.material.clone();
+      
+      // Make it emissive orange
+      clone.material.emissive = outlineColor;
+      clone.material.emissiveIntensity = 0.8;
+      clone.material.transparent = true;
+      clone.material.opacity = 0.3;
+      clone.material.depthWrite = false;
+      
+      // Scale slightly larger
+      clone.scale.multiplyScalar(1.02);
+      
+      // Copy world transform
+      const Vector3 = Object.getPrototypeOf(obj.position).constructor;
+      const Quaternion = Object.getPrototypeOf(obj.quaternion).constructor;
+      
+      const worldPos = new Vector3();
+      const worldQuat = new Quaternion();
+      const worldScale = new Vector3();
+      
+      obj.getWorldPosition(worldPos);
+      obj.getWorldQuaternion(worldQuat);
+      obj.getWorldScale(worldScale);
+      
+      clone.position.copy(worldPos);
+      clone.quaternion.copy(worldQuat);
+      clone.scale.copy(worldScale).multiplyScalar(1.02);
+      
+      outlineGroup.add(clone);
+    });
+  }
+
+  function clearOutline() {
+    if (!outlineGroup) return;
+    while (outlineGroup.children.length > 0) {
+      const child = outlineGroup.children[0];
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) child.material.dispose();
+      outlineGroup.remove(child);
+    }
+  }
+
+  // Start initialization
+  init();
+})();
+</script>
     <script type="module" crossorigin src="/Floating-Island/assets/main-CFV7M8LW.js"></script>
     <link rel="stylesheet" crossorigin href="/Floating-Island/assets/styles-BtI0CA1N.css">
   </head>
