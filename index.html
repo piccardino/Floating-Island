@@ -10,14 +10,7 @@
   <body>
     <main id="app">
       <canvas id="scene"></canvas>
-      <section id="light-controls" aria-label="Controlli luce">
-        <div class="control-row">
-          <div class="control-label">
-            <label for="saturation">Saturazione</label>
-            <output id="saturation-value" for="saturation">1.00</output>
-          </div>
-          <input id="saturation" type="range" min="0" max="3" step="0.05" value="1" data-saturation-param="saturation" />
-        </div>
+      <section id="light-controls" aria-label="Controlli luce" hidden>
         <div class="control-row">
           <div class="control-label">
             <label for="light-intensity">Intensità</label>
